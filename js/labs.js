@@ -186,7 +186,8 @@ function builder(app) {
       geometry: ['Unstable shape', 'العدد مظبوط بس الشكل نفسه بيتحرك: فيه panel من غير diagonal، أو supports كلها في نفس الاتجاه.', 'sweat'],
     }[sol.reason] || ['Solved ✓', `<span class="math">M + R = ${Mm} + ${R} = ${2 * J} = 2J</span> والشكل ثابت، يعني الـ truss <b>stable</b> و <b>statically determinate</b>.`, 'laugh'];
     const noLoad = ok && !M.loads.length;
-    $('#bStatus', app).innerHTML = `<div class="soon"><img src="${FACE(msg[2])}" alt="" style="width:58px"><div><div class="stage__title">${msg[0]}</div><div class="readout" style="margin-top:6px"><span class="pill">J <b>${J}</b></span><span class="pill">M <b>${Mm}</b></span><span class="pill">R <b>${R}</b></span><span class="pill ${ok ? 'pill--ok' : 'pill--bad'}">M+R ${Mm + R === 2 * J ? '=' : Mm + R < 2 * J ? '<' : '>'} 2J</span></div></div></div><p class="ar" style="margin:10px 0 0;font-size:15px">${noLoad ? 'الـ truss stable بس مفيش أحمال. اختار أداة Load وحط حمل.' : msg[1]}</p>`;
+    if (ok && sol.warn) { msg[0] = 'Balanced — but unstable!'; msg[1] = `المجاهيل (${Mm + R}) أقل من المعادلات (${2 * J})، يعني الـ truss ممكن يتحرك (mechanism). الأحمال دي بالصدفة متزنة فطلعت القوى، بس أي حمل أفقي هيوقعه. زوّد member أو support.`; msg[2] = 'sweat'; }
+    $('#bStatus', app).innerHTML = `<div class="soon"><img src="${FACE(msg[2])}" alt="" style="width:58px"><div><div class="stage__title">${msg[0]}</div><div class="readout" style="margin-top:6px"><span class="pill">J <b>${J}</b></span><span class="pill">M <b>${Mm}</b></span><span class="pill">R <b>${R}</b></span><span class="pill ${ok && !sol.warn ? 'pill--ok' : 'pill--bad'}">M+R ${Mm + R === 2 * J ? '=' : Mm + R < 2 * J ? '<' : '>'} 2J</span></div></div></div><p class="ar" style="margin:10px 0 0;font-size:15px">${noLoad ? 'الـ truss stable بس مفيش أحمال. اختار أداة Load وحط حمل.' : msg[1]}</p>`;
   }
 
   function table(sol) {

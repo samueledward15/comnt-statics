@@ -36,14 +36,26 @@ export function solve(model) {
     }
   });
   (model.loads || []).forEach(L => { b[2 * idx[L.at]] -= L.f[0]; b[2 * idx[L.at] + 1] -= L.f[1]; });
-  const x = lsq(A, b, nUn);
+  let x = lsq(A, b, nUn), warn = null;
+  // more equations than unknowns: the truss can move (a mechanism) but these loads may still balance it
+  if (!x && nUn < nEq) {
+    const AT = A[0].map((_, c) => A.map(r => r[c]));
+    const N = AT.map(r => AT.map(q => r.reduce((s, v, i) => s + v * q[i], 0)));
+    const nb = AT.map(r => r.reduce((s, v, i) => s + v * b[i], 0));
+    const y = lsq(N, nb, nUn);
+    if (y) {
+      const res = Math.hypot(...A.map((r, i) => r.reduce((s, v, c) => s + v * y[c], 0) - b[i]));
+      const scale = Math.max(1, ...b.map(Math.abs));
+      if (res < 1e-7 * scale) { x = y; warn = 'mechanism'; }
+    }
+  }
   if (!x) return { ok: false, reason: nUn < nEq ? 'unstable' : nUn > nEq ? 'indeterminate' : 'geometry', m: model.members.length, j: ids.length, r: nUn - model.members.length };
   const forces = {}, reactions = {};
   unknowns.forEach((u, c) => {
     const v = Math.abs(x[c]) < 1e-7 ? 0 : x[c];
     if (u.kind === 'member') forces[key(u.a, u.b)] = v; else reactions[u.name] = { at: u.at, dir: u.dir, value: v };
   });
-  return { ok: true, forces, reactions, m: model.members.length, j: ids.length, r: nUn - model.members.length };
+  return { ok: true, warn, forces, reactions, m: model.members.length, j: ids.length, r: nUn - model.members.length };
 }
 
 // Gauss–Jordan for square systems; for non-square returns null (statically indeterminate/unstable)

@@ -2,6 +2,7 @@
 import { solve, svg, key, state, fmt, counts } from './truss.js';
 import { LESSONS, VIDEOS, MODELS, WALK1, FACTS } from './content.js';
 import { labs } from './labs.js';
+import { practice } from './practice.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -40,7 +41,7 @@ function progress() {
 }
 
 // ---------- Router ----------
-const ROUTES = { '': home, learn, lesson, videos, labs: arg => labs(app, arg, { toast }), games: () => soon('games'), practice: () => soon('practice') };
+const ROUTES = { '': home, learn, lesson, videos, labs: arg => labs(app, arg, { toast }), games: () => soon('games'), practice: arg => practice(app, arg, { toast, S, save }) };
 function route() {
   const [, page = '', arg] = location.hash.replace(/^#/, '').split('/');
   const fn = ROUTES[page] || home;
@@ -117,7 +118,7 @@ function home() {
     <div class="block__head"><h2>Labs & what’s next</h2></div>
     <div class="grid3">
       ${soonCard('labs', 'Virtual Labs <span class="badge badge--done">New</span>', 'Truss Builder · Joint Lab · Section Cutter — open now.', 'wow')}
-      ${soonCard('practice', 'Examples & Practice', 'All 6 solved examples + assignments 5-1 to 5-8 with hints.', 'think')}
+      ${soonCard('practice', 'Examples & Practice <span class="badge badge--done">New</span>', '6 solved examples step by step + Assignment 5 (5-1 to 5-8) with hints.', 'think')}
       ${soonCard('games', 'Games', 'Zero-Force Hunter, T or C?, Start Here and more.', 'starry')}
     </div>
   </section>`;
