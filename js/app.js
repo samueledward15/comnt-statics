@@ -1,6 +1,7 @@
 // Comnt Academy · Trusses Lab — app shell, router, lessons and widgets
 import { solve, svg, key, state, fmt, counts } from './truss.js';
 import { LESSONS, VIDEOS, MODELS, WALK1, FACTS } from './content.js';
+import { labs } from './labs.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -39,7 +40,7 @@ function progress() {
 }
 
 // ---------- Router ----------
-const ROUTES = { '': home, learn, lesson, videos, labs: () => soon('labs'), games: () => soon('games'), practice: () => soon('practice') };
+const ROUTES = { '': home, learn, lesson, videos, labs: arg => labs(app, arg, { toast }), games: () => soon('games'), practice: () => soon('practice') };
 function route() {
   const [, page = '', arg] = location.hash.replace(/^#/, '').split('/');
   const fn = ROUTES[page] || home;
@@ -50,6 +51,7 @@ function route() {
   document.title = (page ? cap(page === 'lesson' ? (LESSONS[arg - 1]?.title || 'Lesson') : page) + ' · ' : '') + 'Trusses Lab · Comnt Academy';
 }
 const cap = s => s[0].toUpperCase() + s.slice(1);
+// pages that keep their own titles
 addEventListener('hashchange', route);
 
 // ---------- Icons ----------
@@ -112,9 +114,9 @@ function home() {
   </section>
 
   <section class="block">
-    <div class="block__head"><h2>Coming next</h2><span class="badge badge--soon">In progress</span></div>
+    <div class="block__head"><h2>Labs & what’s next</h2></div>
     <div class="grid3">
-      ${soonCard('labs', 'Virtual Labs', 'Build any truss, drag the loads, see every force live.', 'wow')}
+      ${soonCard('labs', 'Virtual Labs <span class="badge badge--done">New</span>', 'Truss Builder · Joint Lab · Section Cutter — open now.', 'wow')}
       ${soonCard('practice', 'Examples & Practice', 'All 6 solved examples + assignments 5-1 to 5-8 with hints.', 'think')}
       ${soonCard('games', 'Games', 'Zero-Force Hunter, T or C?, Start Here and more.', 'starry')}
     </div>

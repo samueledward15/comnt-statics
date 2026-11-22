@@ -37,7 +37,7 @@ export function solve(model) {
   });
   (model.loads || []).forEach(L => { b[2 * idx[L.at]] -= L.f[0]; b[2 * idx[L.at] + 1] -= L.f[1]; });
   const x = lsq(A, b, nUn);
-  if (!x) return { ok: false, reason: nUn < nEq ? 'unstable' : 'indeterminate', m: model.members.length, j: ids.length, r: nUn - model.members.length };
+  if (!x) return { ok: false, reason: nUn < nEq ? 'unstable' : nUn > nEq ? 'indeterminate' : 'geometry', m: model.members.length, j: ids.length, r: nUn - model.members.length };
   const forces = {}, reactions = {};
   unknowns.forEach((u, c) => {
     const v = Math.abs(x[c]) < 1e-7 ? 0 : x[c];
@@ -77,14 +77,13 @@ export const fmt = (v, d = 2) => {
 //         showReactions:false, reactions, cut:{x}|{p1,p2}, hideLoads, width, height, pad, tappable }
 export function svg(model, opts = {}) {
   const P = Object.values(model.joints);
-  const xs = P.map(p => p[0]), ys = P.map(p => p[1]);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const xs = P.length ? P.map(p => p[0]) : [0, 1], ys = P.length ? P.map(p => p[1]) : [0, 1];
+  const b = opts.bounds;
+  const minX = b ? b.minX : Math.min(...xs), maxX = b ? b.maxX : Math.max(...xs), minY = b ? b.minY : Math.min(...ys), maxY = b ? b.maxY : Math.max(...ys);
   const spanX = Math.max(maxX - minX, 0.5), spanY = Math.max(maxY - minY, 0.5);
   const W = opts.width || 640, H = opts.height || Math.round(Math.min(460, Math.max(260, W * (spanY + 1.2) / (spanX + 1.6))));
   const pad = opts.pad ?? 78;
-  const s = Math.min((W - 2 * pad) / spanX, (H - 2 * pad) / spanY);
-  const ox = (W - s * spanX) / 2 - s * minX, oy = (H + s * spanY) / 2 + s * minY;
-  const X = x => ox + s * x, Y = y => oy - s * y;
+  const { X, Y } = frame({ minX, maxX, minY, maxY }, W, H, pad);
   const J = id => [X(model.joints[id][0]), Y(model.joints[id][1])];
   const forces = opts.forces || {};
   const hl = new Set(opts.highlightMembers || []), dim = new Set(opts.dim || []);
@@ -119,8 +118,9 @@ export function svg(model, opts = {}) {
   const keep = opts.keepJoint || (() => true);
   if (!opts.hideLoads) (model.loads || []).filter(L => keep(L.at)).forEach(L => {
     // a load whose tail would sit inside the truss is drawn "hanging" (tail at the joint) so it never crosses members
-    const p = model.joints[L.at], d = norm(L.f), q = [p[0] - d[0] * 0.35 * spanX, p[1] - d[1] * 0.35 * spanY];
-    const inside = q[0] >= minX - 1e-6 && q[0] <= maxX + 1e-6 && q[1] >= minY - 1e-6 && q[1] <= maxY + 1e-6;
+    const p = model.joints[L.at], d = norm(L.f), q = [p[0] - d[0] * 0.35 * Math.max(Math.max(...xs) - Math.min(...xs), .5), p[1] - d[1] * 0.35 * Math.max(Math.max(...ys) - Math.min(...ys), .5)];
+    const tx0 = Math.min(...xs), tx1 = Math.max(...xs), ty0 = Math.min(...ys), ty1 = Math.max(...ys);
+    const inside = q[0] >= tx0 - 1e-6 && q[0] <= tx1 + 1e-6 && q[1] >= ty0 - 1e-6 && q[1] <= ty1 + 1e-6;
     out += arrow(J(L.at), L.f, 'load', L.label, opts.uid, inside);
   });
   // reactions
@@ -181,6 +181,14 @@ function supportGlyph([x, y], sp) {
   return `<g class="sup" transform="translate(${x} ${y}) rotate(${ang})">${g}</g>`;
 }
 const hatch = y0 => [-22, -11, 0, 11, 22].map(h => `<line class="sup__h" x1="${h}" y1="${y0}" x2="${h - 8}" y2="${y0 + 9}"/>`).join('');
+
+// world <-> svg pixel mapping shared by the renderer and the interactive labs
+export function frame({ minX, maxX, minY, maxY }, W, H, pad) {
+  const spanX = Math.max(maxX - minX, 0.5), spanY = Math.max(maxY - minY, 0.5);
+  const s = Math.min((W - 2 * pad) / spanX, (H - 2 * pad) / spanY);
+  const ox = (W - s * spanX) / 2 - s * minX, oy = (H + s * spanY) / 2 + s * minY;
+  return { s, X: x => ox + s * x, Y: y => oy - s * y, inv: (px, py) => [(px - ox) / s, (oy - py) / s] };
+}
 
 // counts for the simple-truss check
 export const counts = m => ({ M: m.members.length, J: Object.keys(m.joints).length });

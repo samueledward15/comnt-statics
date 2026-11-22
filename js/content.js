@@ -56,6 +56,30 @@ export const MODELS = {
     const loads = [1, 2, 3, 4, 5].map(i => ({ at: 'L' + i, f: [0, -10], label: '10 kN' }));
     return { joints: j, members: mem, supports: { L0: 'pin', L6: { dir: [0, 1], name: 'NL6' } }, loads };
   })(),
+  // Howe bridge: same as Pratt, diagonals the other way
+  howe: (() => {
+    const j = {}; const mem = [];
+    for (let i = 0; i <= 6; i++) j['L' + i] = [2 * i, 0];
+    for (let i = 1; i <= 5; i++) j['U' + i] = [2 * i, 2];
+    for (let i = 0; i < 6; i++) mem.push(['L' + i, 'L' + (i + 1)]);
+    for (let i = 1; i < 5; i++) mem.push(['U' + i, 'U' + (i + 1)]);
+    mem.push(['L0', 'U1'], ['U5', 'L6']);
+    for (let i = 1; i <= 5; i++) mem.push(['L' + i, 'U' + i]);
+    mem.push(['L1', 'U2'], ['L2', 'U3'], ['L4', 'U3'], ['L5', 'U4']);
+    const loads = [1, 2, 3, 4, 5].map(i => ({ at: 'L' + i, f: [0, -10], label: '10 kN' }));
+    return { joints: j, members: mem, supports: { L0: 'pin', L6: { dir: [0, 1], name: 'NL6' } }, loads };
+  })(),
+  // Warren bridge: equilateral-ish triangles, no verticals
+  warren: (() => {
+    const j = {}; const mem = [];
+    for (let i = 0; i <= 4; i++) j['L' + i] = [3 * i, 0];
+    for (let i = 1; i <= 4; i++) j['U' + i] = [3 * i - 1.5, 2.6];
+    for (let i = 0; i < 4; i++) mem.push(['L' + i, 'L' + (i + 1)]);
+    for (let i = 1; i < 4; i++) mem.push(['U' + i, 'U' + (i + 1)]);
+    for (let i = 1; i <= 4; i++) mem.push(['L' + (i - 1), 'U' + i], ['U' + i, 'L' + i]);
+    const loads = [1, 2, 3].map(i => ({ at: 'L' + i, f: [0, -12], label: '12 kN' }));
+    return { joints: j, members: mem, supports: { L0: 'pin', L4: { dir: [0, 1], name: 'NL4' } }, loads };
+  })(),
   // Zero-force hunter
   zfm: { joints: { A: [0, 0], B: [2, 0], C: [4, 0], D: [6, 0], E: [8, 0], F: [2, 2], G: [4, 2], H: [6, 2], I: [8, 2] },
     members: [['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'E'], ['A', 'F'], ['F', 'G'], ['G', 'H'], ['H', 'E'], ['B', 'F'], ['C', 'G'], ['D', 'H'], ['F', 'C'], ['C', 'H'], ['H', 'I'], ['I', 'E']],
@@ -220,6 +244,7 @@ export const LESSONS = [
       { id: 'cutter', title: 'Section Cutter', chip: 'try', blocks: [
         { type: 'explain', ar: `<p>حرّك الـ cut على الكوبري ده (Pratt truss، كل panel طوله 2 m وارتفاعه 2 m، وعلى كل joint تحت 10 kN). شوف الـ members المقطوعة، والنقطة اللي لو أخدت عندها moment هتطلّعلك مجهول واحد على طول.</p>` },
         { type: 'widget', id: 'cutter' },
+        { type: 'explain', ar: '<p>عايز تقطع بخط مايل أو على كوبري تاني؟ جرّب الـ <a href="#/labs/cutter"><b>Section Cutter</b></a> الكامل في الـ Labs، أو ابني الـ truss بتاعك في الـ <a href="#/labs/builder"><b>Truss Builder</b></a>.</p>' },
       ]},
       { id: 'trick', title: 'The moment trick', chip: 'khamseena', blocks: [
         { type: 'explain', ar: `<p><strong>التريك:</strong> اختار نقطة الـ moment عند تقاطع خطّين من الـ 3 members المقطوعة. الاتنين دول مش هيعملوا moment حوالين النقطة دي، فيفضل مجهول واحد بس. زي ما الملزمة عملت في Example 4: أخدت ${m('ΣM<sub>D</sub> = 0')} لأن GD و CD بيعدّوا في D، فطلعت ${m('F<sub>GF</sub>')} على طول.</p>

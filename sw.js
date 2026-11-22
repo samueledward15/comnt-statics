@@ -1,6 +1,6 @@
 // Trusses Lab service worker: app shell offline, fonts cached on first use, YouTube always online.
-const V = 'trusses-v1';
-const SHELL = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/truss.js', 'js/content.js', 'manifest.webmanifest',
+const V = 'trusses-v2';
+const SHELL = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/truss.js', 'js/content.js', 'js/labs.js', 'manifest.webmanifest',
   'assets/logo/comnt-logo-animated.svg', 'assets/logo/comnt-logo-animated-reverse.svg', 'icons/favicon.svg', 'icons/icon-192.png',
   ...['happy', 'talk', 'think', 'wow', 'laugh', 'glare', 'tea', 'starry', 'sweat', 'wink'].map(f => `assets/faces/${f}.svg`)];
 
