@@ -3,6 +3,7 @@ import { solve, svg, key, state, fmt, counts } from './truss.js';
 import { LESSONS, VIDEOS, MODELS, WALK1, FACTS } from './content.js';
 import { labs } from './labs.js';
 import { practice } from './practice.js';
+import { games } from './games.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -41,7 +42,7 @@ function progress() {
 }
 
 // ---------- Router ----------
-const ROUTES = { '': home, learn, lesson, videos, labs: arg => labs(app, arg, { toast }), games: () => soon('games'), practice: arg => practice(app, arg, { toast, S, save }) };
+const ROUTES = { '': home, learn, lesson, videos, labs: arg => labs(app, arg, { toast }), games: arg => games(app, arg, { toast, S, save }), practice: arg => practice(app, arg, { toast, S, save }) };
 function route() {
   const [, page = '', arg] = location.hash.replace(/^#/, '').split('/');
   const fn = ROUTES[page] || home;
@@ -115,11 +116,11 @@ function home() {
   </section>
 
   <section class="block">
-    <div class="block__head"><h2>Labs & what’s next</h2></div>
+    <div class="block__head"><h2>Labs, practice & games</h2></div>
     <div class="grid3">
-      ${soonCard('labs', 'Virtual Labs <span class="badge badge--done">New</span>', 'Truss Builder · Joint Lab · Section Cutter — open now.', 'wow')}
-      ${soonCard('practice', 'Examples & Practice <span class="badge badge--done">New</span>', '6 solved examples step by step + Assignment 5 (5-1 to 5-8) with hints.', 'think')}
-      ${soonCard('games', 'Games', 'Zero-Force Hunter, T or C?, Start Here and more.', 'starry')}
+      ${soonCard('labs', 'Virtual Labs', 'Truss Builder · Joint Lab · Section Cutter — open now.', 'wow')}
+      ${soonCard('practice', 'Examples & Practice', '6 solved examples step by step + Assignment 5 (5-1 to 5-8) with hints.', 'think')}
+      ${soonCard('games', 'Games <span class="badge badge--done">New</span>', 'Zero-Force Hunter · T or C? · Start Here · Stable or Not?', 'starry')}
     </div>
   </section>`;
   bindInstall();
@@ -256,20 +257,6 @@ function videos() {
   };
   $$('[data-f]').forEach(b => b.addEventListener('click', () => { $$('[data-f]').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(b.dataset.f); }));
   draw('all');
-}
-
-// =====================================================================
-// Coming-soon pages
-// =====================================================================
-function soon(kind) {
-  const P = {
-    labs: ['Virtual Labs', 'wow', 'Stage 2', 'هتبني أي truss بإيدك، تحط الأحمال والـ supports، وتشوف القوة في كل member بتتحسب على طول وهي بتتلوّن T أو C.', [['Truss Builder', 'ارسم، حمّل، وحلّ'], ['Joint Lab', 'وازن الأسهم لحد ΣF = 0'], ['Section Cutter', 'اقطع في أي حتة']], [5, 'cutter', 'Try the Section Cutter in Lesson 5']],
-    practice: ['Examples & Practice', 'think', 'Stage 3', 'الأمثلة الـ 6 اللي في الملزمة متحلولة خطوة بخطوة على الرسمة، والـ assignments من 5-1 لـ 5-8 بنفس شكل الامتحان، فيها hint وحل كامل.', [['6 Solved Examples', 'Joints + Sections'], ['8 Assignments', 'MCQ زي الامتحان'], ['Hints & full solutions', 'مش هتتزنق']], [4, 'walk', 'Try Example 1 step by step in Lesson 4']],
-    games: ['Games', 'starry', 'Stage 4', 'ألعاب سريعة تثبّت المعلومة: تلاقي الـ zero-force members، تخمّن T ولا C، وتختار أول joint تبدأ بيها.', [['Zero-Force Hunter', 'بالنظر وبس'], ['T or C?', 'اسحب يمين أو شمال'], ['Start Here', 'أنهي joint الأول؟']], [6, 'hunt', 'Play Zero-Force Hunter in Lesson 6']],
-  }[kind];
-  app.innerHTML = `<div class="lhead"><div><div class="kicker">${P[2]} · coming soon</div><h1>${P[0]}</h1><div class="lhead__ar">${P[3]}</div></div><img class="lhead__face" src="${FACE(P[1])}" alt=""></div>
-  <div class="block grid3">${P[4].map(([a, b]) => `<div class="card"><h3>${a}</h3><div class="ar muted" style="margin-top:6px">${b}</div><span class="badge badge--soon" style="display:inline-block;margin-top:12px">Soon</span></div>`).join('')}</div>
-  <div class="block withface"><div class="bubble bubble--soft"><b>Can’t wait?</b> A first taste is already inside the lessons.<div style="margin-top:12px"><a class="mt-btn mt-btn--sm" href="#/lesson/${P[5][0]}">${P[5][2]} →</a></div></div><img src="${FACE('wink')}" alt=""></div>`;
 }
 
 // =====================================================================
